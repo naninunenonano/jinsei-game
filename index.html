@@ -29,7 +29,7 @@ function event(p,n){const type=tile(n);if(type==='就職'){const jobs=[['会社�
 if(type==='転職'){choose('転職しますか？',['転職する','今の仕事を続ける'],i=>{if(i===0){p.job='専門職';p.salary=35;add(p.name+'が転職した')}},Math.random()<.5?0:1);return}
 if(type==='昇進'){if(p.job!=='フリーター'){p.salary+=8;add(p.name+'が昇進！ 給料+8万円')}else{add(p.name+'は昇進できなかった')}return}
 if(type==='出産'){if(p.married){p.children++;p.money-=30;add(p.name+'に子どもが誕生！ -30万円')}else add(p.name+'は出産イベントなし');return}
-if(type==='給料日'){p.money+=p.salary;add(p.name+'が給料 '+yen(p.salary)+'を受け取った');return}
+if(type==='給料日'){return}
 if(type==='イベント'){const events=[['臨時ボーナス',30],['旅行',-25],['宝くじ当選',70],['家電の故障',-35],['親戚からお祝い',20],['病院代',-15]];const e=events[Math.floor(Math.random()*events.length)];p.money+=e[1];add(p.name+'：'+e[0]+' '+(e[1]>0?'+':'')+yen(e[1]));return}
 const delta=type==='収入'?10+Math.floor(Math.random()*31):-(5+Math.floor(Math.random()*26));p.money+=delta;add(p.name+'：'+type+' '+(delta>0?'+':'')+yen(delta))}
 function stopEvent(p,n){switch(n){case 40:choose('結婚の節目。結婚しますか？',['結婚する（-50万円）','独身で進む'],i=>{if(i===0){p.married=true;p.money-=50;add(p.name+'が結婚した')}else add(p.name+'は独身を選んだ')},0);break;
@@ -38,7 +38,7 @@ case 165:choose('人生最大の賭け！ 100万円を賭けますか？',['賭�
 case 180:const pension=p.job==='フリーター'?30:150;p.money+=pension;add(p.name+'：厚生年金関連の仮イベント +'+yen(pension));break;
 case 185:if(p.money<0){add(p.name+'：決算、借金 '+yen(-p.money)+'を確認')}else add(p.name+'：決算、現金 '+yen(p.money)+'を確認');break}}
 function finishAction(){render();if(pending)return;const p=ps[turn];if(p.pos>=200){p.finished=true;add(p.name+'がゴール！')}if(ps.every(x=>x.finished)){ended=true;render();return}let tries=0;do{turn=(turn+1)%ps.length;tries++}while(ps[turn].finished&&tries<=ps.length);render();if(turn!==0&&!ended){setTimeout(()=>{if(!pending&&!ended&&turn!==0)roll()},550)}}
-function roll(){if(pending||ended)return;const p=ps[turn];const n=1+Math.floor(Math.random()*10);let target=Math.min(200,p.pos+n);const stop=Object.keys(stops).map(Number).find(s=>s>p.pos&&s<=target);if(stop)target=stop;p.pos=target;add(p.name+'が'+n+'を出して'+target+'マス目へ');render();if(stop)stopEvent(p,stop);else if(target<200)event(p,target);if(!pending)finishAction()}
+function roll(){if(pending||ended)return;const p=ps[turn];const n=1+Math.floor(Math.random()*10);let target=Math.min(200,p.pos+n);const stop=Object.keys(stops).map(Number).find(s=>s>p.pos&&s<=target);if(stop)target=stop;const previous=p.pos;p.pos=target;add(p.name+'が'+n+'を出して'+target+'マス目へ');for(let square=previous+1;square<=target;square++){if(tile(square)==='給料日'){p.money+=p.salary;add(p.name+'が'+square+'マス目の給料日を通過：+'+yen(p.salary))}}render();if(stop)stopEvent(p,stop);else if(target<200)event(p,target);if(!pending)finishAction()}
 $('roll').addEventListener('click',roll);$('reset').addEventListener('click',reset);reset();
 })();
 </script></body></html>
